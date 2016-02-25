@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+
+import distutils
+import os
+import platform
+import shutil
+import subprocess
+import unittest
+import yaml
+
+CONFIG = '/etc/scylla/scylla.yaml'
+
+def is_exe(fpath):
+    try:
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+    except:
+        return False
+
+def file_contents(filename):
+    with open(filename) as f:
+            return f.read()
+
+def run(args):
+    return subprocess.check_output(args).decode('utf-8')
+
+scylla_installed = is_exe('/usr/bin/scylla')
+linux_dist = run(['lsb_release', '-i']).split()[-1]
+dist_version = run(['lsb_release', '-r']).split()[-1]
+
+class TestScyllaReady(unittest.TestCase):
+ 
+    def setUp(self):
+        pass
+ 
+    def test_amd64(self):
+        self.assertEqual(platform.machine(), 'x86_64')
+
+    def test_linux(self):
+        self.assertEqual(platform.system(), 'Linux')
+
+    def test_linux_distribution(self):
+        if linux_dist == 'Fedora':
+            if dist_version == '22':
+                return
+            else:
+                self.fail("Unsupported version of %s: %s" % (linux_dist, linux_version))
+        if dist == "Ubuntu":
+            return
+        if dist == "CentOS":
+            return
+
+        self.fail("Unsupported distribution: %s" % linux_dist)
+
+    def test_no_abrt(self):
+        self.assertFalse(is_exe('/usr/sbin/abrtd'), "abrt is installed.  See http://www.scylladb.com/doc/system-configuration/#remove-crash-reporting-software")
+
+    def test_ntp(self):
+        ntpstat = shutil.which("ntpstat")
+        self.assertTrue(is_exe(ntpstat), "ntpstat command not available.")
+        self.assertIn('time correct', run(ntpstat), "NTP not synchronized: check ntpstat")
+
+    # FIXME: add a test for correct kernel XFS 
+    # http://www.scylladb.com/kb/kb-fs-not-qualified-aio/
+
+
+class TestScyllaSetup(unittest.TestCase):
+
+    def setUp(self):
+        if not scylla_installed:
+            self.skipTest('Scylla not yet installed.  See http://www.scylladb.com/doc/getting-started/')
+
+    def test_config_exists(self):
+        self.assertTrue(os.path.isfile(CONFIG), "%s not found" % CONFIG)
+
+    def test_config_is_yaml(self):
+        with open(CONFIG, 'r') as fh:
+            try:
+                conf = yaml.load(fh)
+            except yaml.YAMLError as ex:
+                self.fail("Syntax error in %s: %s" % (CONFIG, ex))
+
+    def test_datadirs_exist(self):
+        with open(CONFIG, 'r') as fh:
+            conf = yaml.load(fh)
+            for dd in conf['data_file_directories']:
+                self.assertTrue(os.path.isdir(dd), "%s is not a directory" % dd)
+
+    # FIXME: check that datadirs are on XFS
+
+    # FIXME: check commitlog directories
+
+
+
+
+
+if __name__ == '__main__':
+    if not scylla_installed:
+        print("Scylla not installed. Checking system configuration only.")
+        print("See http://www.scylladb.com/doc/getting-started/ to install Scylla.")
+    unittest.main()
