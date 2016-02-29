@@ -59,6 +59,12 @@ class TestScyllaReady(unittest.TestCase):
         self.assertTrue(is_exe(ntpstat), "ntpstat command not available.")
         self.assertIn('time correct', run(ntpstat), "NTP not synchronized: check ntpstat")
 
+    def test_sse_42(self):
+        cpuinfo = file_contents('/proc/cpuinfo')
+        for line in cpuinfo.split('\n'):
+            if line.startswith('flags'):
+                self.assertIn('sse4_2', line.split(), "SSE 4.2 extensions not found in /proc/cpuinfo.")
+
     # FIXME: add a test for correct kernel XFS 
     # http://www.scylladb.com/kb/kb-fs-not-qualified-aio/
 
