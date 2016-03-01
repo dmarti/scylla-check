@@ -16,9 +16,9 @@ def is_exe(fpath):
     except:
         return False
 
-def file_contents(filename):
+def file_lines(filename):
     with open(filename) as f:
-            return f.read()
+        return f.readlines()
 
 def run(args):
     return subprocess.check_output(args).decode('utf-8')
@@ -60,8 +60,7 @@ class TestScyllaReady(unittest.TestCase):
         self.assertIn('time correct', run(ntpstat), "NTP not synchronized: check ntpstat")
 
     def test_sse_42(self):
-        cpuinfo = file_contents('/proc/cpuinfo')
-        for line in cpuinfo.split('\n'):
+        for line in file_lines('/proc/cpuinfo'):
             if line.startswith('flags'):
                 self.assertIn('sse4_2', line.split(), "SSE 4.2 extensions not found in /proc/cpuinfo.")
 
