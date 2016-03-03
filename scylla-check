@@ -49,7 +49,7 @@ class TestScyllaReady(unittest.TestCase):
             if dist_version == '22':
                 return
             else:
-                self.fail("Unsupported version of %s: %s" % (linux_dist, linux_version))
+                self.fail("Unsupported version of %s: %s" % (linux_dist, dist_version))
         if dist == "Ubuntu":
             return
         if dist == "CentOS":
