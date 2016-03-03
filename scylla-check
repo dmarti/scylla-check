@@ -119,7 +119,7 @@ class TestScyllaSetup(unittest.TestCase):
 
     # FIXME: check commitlog directories
 
-
+    # FIXME: run iotune to check performance on data directories
 
 
 
