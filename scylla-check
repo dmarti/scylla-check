@@ -5,8 +5,14 @@ import os
 import platform
 import shutil
 import subprocess
+import sys
 import unittest
-import yaml
+
+try:
+    import yaml
+except:
+    print("You need to install python3-PyYAML.x86_64")
+    sys.exit(1)
 
 CONFIG = '/etc/scylla/scylla.yaml'
 
