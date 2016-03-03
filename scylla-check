@@ -37,6 +37,15 @@ class TestScyllaReady(unittest.TestCase):
  
     def setUp(self):
         pass
+
+    def check_output(self, args):
+        success = True
+        try:
+            return subprocess.check_output(args).decode('utf-8')            
+        except subprocess.CalledProcessError:
+            success = False
+        if  not success:
+            self.fail("Error running %s" % args)
  
     def test_amd64(self):
         self.assertEqual(platform.machine(), 'x86_64')
@@ -63,7 +72,8 @@ class TestScyllaReady(unittest.TestCase):
     def test_ntp(self):
         ntpstat = shutil.which("ntpstat")
         self.assertTrue(is_exe(ntpstat), "ntpstat command not available.")
-        self.assertIn('time correct', run(ntpstat), "NTP not synchronized: check ntpstat")
+        result = self.check_output(ntpstat)
+        self.assertIn('time correct', result, "NTP not synchronized: check ntpstat")
 
     def test_sse_42(self):
         for line in file_lines('/proc/cpuinfo'):
