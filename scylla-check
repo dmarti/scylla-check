@@ -80,16 +80,20 @@ class TestScyllaReady(unittest.TestCase):
             if line.startswith('flags'):
                 self.assertIn('sse4_2', line.split(), "SSE 4.2 extensions not found in /proc/cpuinfo.")
 
+    def test_syncookies(self):
+        setting = int(run(['sysctl', '-n', 'net.ipv4.tcp_syncookies']))
+        self.assertEqual(setting, 1, "net.ipv4.tcp_syncookies is not set to 1.")
+
     def test_kernel_version(self):
         digit = platform.uname()[2].split('.')
         if linux_dist == "CentOS" or linux_dist == "RHEL": # FIXME check result on RHEL
             (minor, patch) = digit[2].split('-')
             if int(minor) >= 327:
-                return true
+                return True
         if int(digit[0]) > 3:
-            return true
+            return True
         if int(digit[0]) == 3 and int(digit[1]) >= 15:
-            return true
+            return True
         self.fail("Old or unknown kernel version")
 
 
